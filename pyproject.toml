@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qr-code-generator"
+version = "2.0.0"
+description = "Generate QR Code images from Excel contact data with flexible formats and CLI"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Jishnu Teegala"}
+]
+keywords = ["qr-code", "excel", "contacts", "vcard", "mecard"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "pandas>=2.0.0",
+    "qrcode>=7.0",
+    "pillow>=10.0.0",
+    "openpyxl>=3.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/jishnuteegala/qr-code-generator"
+Repository = "https://github.com/jishnuteegala/qr-code-generator"
+Issues = "https://github.com/jishnuteegala/qr-code-generator/issues"
+
+[project.scripts]
+qrgen = "generate_qr_code_images:main"
