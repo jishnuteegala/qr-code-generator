@@ -1,6 +1,6 @@
 # Excel to QR Code Generator
 
-> **v2.0.0** - Generate QR Code images from contact details stored in an Excel file with flexible output formats, customization options, and an intuitive CLI.
+> **v3.0.0** - Generate QR Code images from contact details stored in an Excel file with flexible output formats, customization options, and an intuitive CLI.
 
 For version history, see [CHANGELOG.md](CHANGELOG.md).
 
@@ -29,14 +29,14 @@ run.bat
    .venv\Scripts\activate
    ```
 
-3. **Install dependencies:**
+3. **Install the package:**
    ```cmd
-   pip install -r requirements.txt
+   pip install -e .
    ```
 
 4. **Run with sample data:**
    ```cmd
-   python generate_qr_code_images.py
+   python -m qr_code_generator
    ```
 
 ### Linux/Mac
@@ -62,14 +62,14 @@ bash scripts/setup.sh
    source .venv/bin/activate
    ```
 
-3. **Install dependencies:**
+3. **Install the package:**
    ```bash
-   pip install -r requirements.txt
+   pip install -e .
    ```
 
 4. **Run with sample data:**
    ```bash
-   python generate_qr_code_images.py
+   python -m qr_code_generator
    ```
 
 ---
@@ -82,36 +82,49 @@ This generates QR codes from `input/contacts.xlsx` and saves them to the `images
 
 **Default behavior** (Phone-only QR codes with `+` prefix):
 ```cmd
-python generate_qr_code_images.py
+python -m qr_code_generator
+```
+
+**Using the CLI shortcut:**
+```cmd
+qrgen
 ```
 
 **Specify custom paths (relative):**
 ```cmd
-python generate_qr_code_images.py --input data.xlsx --output qr_images/
+python -m qr_code_generator --input data.xlsx --output qr_images/
 ```
 
 **Use absolute paths anywhere on your system:**
 ```bash
 # Windows
-python generate_qr_code_images.py --input "C:\Users\YourName\Documents\contacts.xlsx" --output "D:\QR_Codes"
+python -m qr_code_generator --input "C:/Users/YourName/Documents/contacts.xlsx" --output "D:/QR_Codes"
 
 # Linux/Mac
-python generate_qr_code_images.py --input "/home/username/documents/contacts.xlsx" --output "/home/username/qr_codes"
+python -m qr_code_generator --input "/home/username/documents/contacts.xlsx" --output "/home/username/qr_codes"
 ```
 
-**Generate vCard format without plus sign:**
+### New in v3.0.0
+
+**Dry-run mode to test configuration:**
 ```cmd
-python generate_qr_code_images.py --payload-format vcard --no-keep-plus
+python -m qr_code_generator --dry-run
 ```
 
-**Custom filename using Name field:**
+**Export manifest:**
 ```cmd
-python generate_qr_code_images.py --filename-template "{Name}"
+python -m qr_code_generator --export-manifest --manifest-format json
 ```
 
-**Enable deduplication and overwrite existing files:**
+**Generate SVG or PDF outputs:**
 ```cmd
-python generate_qr_code_images.py --dedup --overwrite
+python -m qr_code_generator --output-format svg
+python -m qr_code_generator --output-format pdf
+```
+
+**Security options:**
+```cmd
+python -m qr_code_generator --allowed-output-path ./output --redact-logs
 ```
 
 ### CLI Options
@@ -120,11 +133,17 @@ python generate_qr_code_images.py --dedup --overwrite
 |--------|-------------|---------|
 | `-i, --input` | Input Excel file path (absolute or relative) | `input/contacts.xlsx` |
 | `-o, --output` | Output folder for QR codes (absolute or relative) | `images` |
-| `-s, --sheet` | Sheet name or index | `0` |
+| `-s, --sheet` | Sheet index | `0` |
 | `--keep-plus` | Prefix phone numbers with `+` | Enabled |
 | `--no-keep-plus` | Don't prefix phone numbers | - |
 | `--overwrite` | Overwrite existing QR files | Disabled |
 | `--dedup` | Skip duplicate phone numbers | Disabled |
+| `--dry-run` | Validate without generating | - |
+| `--export-manifest` | Export metadata JSON/CSV | - |
+| `--allowed-output-path` | Restrict output to directory | - |
+| `--redact-logs` | Redact PII from logs | Enabled |
+| `--max-file-size-mb` | Max input file size (MB) | `100` |
+| `--max-rows` | Max rows to process | `100000` |
 | `-v, --verbose` | Verbose logging (DEBUG level) | - |
 | `-q, --quiet` | Suppress non-error output | - |
 
@@ -140,7 +159,8 @@ python generate_qr_code_images.py --dedup --overwrite
 **Payload & Filename:**
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--payload-format` | Format: `phone`, `vcard`, `mecard` | `phone` |
+| `--payload-format` | Format: `phone`, `vcard`, `mecard`, `wifi`, `url`, `sms`, `email` | `phone` |
+| `--output-format` | File format: `png`, `svg`, `pdf` | `png` |
 | `--filename-template` | Template using `{ColumnName}` | `{Phone}` |
 
 ### Excel Format
@@ -177,6 +197,30 @@ Compact Japanese format supported by many QR readers:
 MECARD:N:John Smith;TEL:+441234567890;EMAIL:john.smith@example.com;;
 ```
 
+### WiFi (v3.0.0)
+WiFi network configuration:
+```
+WIFI:T:WPA;S:NetworkName;P:Password;H:false;;
+```
+
+### URL (v3.0.0)
+Direct URL:
+```
+https://example.com
+```
+
+### SMS (v3.0.0)
+SMS message:
+```
+smsto:+441234567890:Message body
+```
+
+### Email (v3.0.0)
+Email message:
+```
+mailto:user@example.com?subject=Subject&body=Body
+```
+
 ## Filename Templates
 
 Use column names from your Excel file in curly braces:
@@ -186,7 +230,16 @@ Use column names from your Excel file in curly braces:
 - `{Email}` → `john.smith@example.com.png`
 - `{Name}_{Phone}` → `John Smith_+441234567890.png`
 
+If you use `--output-format svg` or `--output-format pdf`, the same template is used with `.svg` or `.pdf` extensions.
+
 The script automatically sanitizes filenames to remove invalid characters and handle Windows reserved names.
+
+## Security Features (v3.0.0)
+
+- **Path Traversal Prevention**: Template variables are validated to prevent path traversal attacks
+- **Output Sandbox**: Use `--allowed-output-path` to restrict output to a specific directory
+- **PII Redaction**: Phone numbers and emails are masked in logs by default
+- **File Validation**: Excel files are validated for magic bytes and size limits
 
 ## Troubleshooting
 
@@ -209,22 +262,22 @@ The script automatically sanitizes filenames to remove invalid characters and ha
 
 **Generate colored QR codes:**
 ```cmd
-python generate_qr_code_images.py --fill-color darkblue --back-color lightgray
+python -m qr_code_generator --fill-color darkblue --back-color lightgray
 ```
 
 **High error correction for damaged/small codes:**
 ```cmd
-python generate_qr_code_images.py --error-correction H
+python -m qr_code_generator --error-correction H
 ```
 
 **Process specific Excel sheet:**
 ```cmd
-python generate_qr_code_images.py --sheet "Contacts 2024"
+python -m qr_code_generator --sheet 1
 ```
 
 **Combine multiple options:**
 ```cmd
-python generate_qr_code_images.py ^
+python -m qr_code_generator ^
     --input data/employees.xlsx ^
     --output qr_codes/employees/ ^
     --payload-format vcard ^
@@ -234,59 +287,96 @@ python generate_qr_code_images.py ^
     --verbose
 ```
 
-**Process files from anywhere on your system:**
-```bash
-# Windows (CMD)
-python generate_qr_code_images.py ^
-    --input "C:\Users\John\Documents\Sales\contacts_2024.xlsx" ^
-    --output "D:\Shared\QR_Codes\Sales" ^
-    --payload-format vcard
-
-# Linux/Mac (bash/zsh)
-python generate_qr_code_images.py \
-    --input "/home/john/documents/sales/contacts_2024.xlsx" \
-    --output "/mnt/shared/qr_codes/sales" \
-    --payload-format vcard
-```
-
-> **Note:** Use `^` for line continuation in CMD, `` ` `` in PowerShell, or `\` in bash/zsh. Quote paths with spaces.
-
-## Platform Support
-
-**Fully cross-platform** - works on:
-- ✅ Windows (10, 11)
-- ✅ Linux (Ubuntu, Debian, Fedora, etc.)
-- ✅ macOS (10.15+)
-
-**Path formats:**
-- Windows: `C:\Users\...\file.xlsx` or `C:/Users/.../file.xlsx` (both work)
-- Linux/Mac: `/home/username/documents/file.xlsx`
-
-**Python versions:** 3.8+ (tested on 3.12.1)
-
-## Project Structure
+## Project Structure (v3.0.0)
 
 ```
 qr-code-generator/
 ├── .venv/                          # Virtual environment
-├── .github/
-│   └── copilot-instructions.md     # AI agent instructions
 ├── scripts/
 │   ├── setup.ps1                   # Windows setup automation
 │   └── setup.sh                    # Linux/Mac setup automation
+├── qr_code_generator/              # Main package
+│   ├── __init__.py
+│   ├── __version__.py
+│   ├── cli.py                      # CLI entry point
+│   ├── service.py                  # Main orchestration
+│   ├── di/                         # Dependency injection
+│   ├── core/                       # Core modules
+│   │   ├── generator.py           # QR generation
+│   │   ├── formatter.py           # Phone formatting
+│   │   ├── sanitizer.py           # Filename sanitization
+│   │   ├── validator.py           # Data validation
+│   │   └── interfaces.py          # Abstract interfaces
+│   ├── plugins/
+│   │   ├── payload/               # Payload generators
+│   │   └── output/                # Output adapters
+│   └── utils/                     # Utilities
+├── tests/                         # Test suite
+│   ├── unit/
+│   └── integration/
 ├── input/
 │   └── contacts.xlsx               # Sample input data
 ├── images/                         # Generated QR codes
-│   └── .gitkeep
-├── generate_qr_code_images.py      # Main script
-├── requirements.txt                # Python dependencies
 ├── pyproject.toml                  # Packaging metadata
+├── pytest.ini                      # Test configuration
 ├── run.bat                         # Windows quick runner
 ├── run.sh                          # Linux/Mac quick runner
 ├── .gitignore                      # Git ignore rules
 ├── CHANGELOG.md                    # Version history
 ├── README.md                       # This file
+├── AGENTS.md                       # AI agent instructions
 └── LICENSE                         # MIT License
+```
+
+## Architecture Notes
+
+- `cli.py` parses command-line arguments and maps them to service options.
+- `service.py` (`QRCodeService`) is the orchestration layer used by CLI and tests. It validates input files/data, applies dedup and filename sanitization, creates payloads, invokes the QR generator, and writes optional manifests.
+- `core/generator.py` performs QR generation and delegates file writing to output adapters (`png`/`svg`/`pdf`).
+
+## Using QRCodeService Programmatically
+
+If you want to use the package from Python code (without invoking the CLI), call `QRCodeService` directly:
+
+```python
+from qr_code_generator.service import QRCodeService
+
+service = QRCodeService()
+
+exit_code = service.generate_from_excel(
+   input_file="input/contacts.xlsx",
+   output_folder="images",
+   payload_format="vcard",      # phone|vcard|mecard|wifi|url|sms|email
+   output_format="svg",         # png|svg|pdf
+   filename_template="{Name}_{Phone}",
+   dedup=True,
+   overwrite=False,
+   dry_run=False,
+   export_manifest=True,
+   manifest_format="json",      # json|csv
+)
+
+if exit_code != 0:
+   raise RuntimeError("QR generation failed")
+```
+
+Notes:
+- Return value is an exit-style status code (`0` success, `1` failure).
+- `allowed_output_path` enables output sandboxing when needed.
+- This is the same workflow the CLI uses internally, so behavior stays consistent.
+
+## Testing
+
+Pytest configuration is maintained in `pytest.ini`.
+
+Run the test suite:
+```cmd
+python -m pytest tests -v
+```
+
+Run with coverage:
+```cmd
+python -m pytest tests --cov=qr_code_generator --cov-report=term-missing
 ```
 
 ## License

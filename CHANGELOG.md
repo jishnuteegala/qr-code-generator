@@ -5,6 +5,69 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-02-14
+
+### Added
+
+- **Modular Architecture**
+  - Package structure with DI container
+  - Abstract interfaces for all components
+  - Plugin system for payload generators and output adapters
+  - Constructor injection throughout
+
+- **Security Hardening**
+  - Path traversal prevention in filename templates
+  - Output sandboxing with `--allowed-output-path`
+  - PII redaction in logs (enabled by default)
+  - Excel file validation (magic bytes)
+  - File size and row limits
+
+- **New Payload Formats**
+  - WiFi: `WIFI:T:WPA;S:NetworkName;P:Password;;`
+  - URL: `https://example.com`
+  - SMS: `smsto:+1234567890:Message`
+  - Email: `mailto:user@example.com?subject=...&body=...`
+
+- **New CLI Options**
+  - `--dry-run`: Validate inputs without generating QR codes
+  - `--export-manifest`: Export metadata to JSON/CSV
+  - `--manifest-format`: Choose manifest format
+  - `--redact-logs` / `--no-redact-logs`: Control PII redaction
+  - `--max-file-size-mb`: Limit input file size
+  - `--max-rows`: Limit number of rows
+  - `--output-format`: Choose output format (`png`, `svg`, `pdf`)
+
+- **Test Suite**
+  - 58 unit and integration tests
+  - pytest configuration in pyproject.toml
+  - Test fixtures for Excel files, temporary directories
+  - Coverage reporting
+
+### Fixed
+
+- Output format generation now works end-to-end for `png`, `svg`, and `pdf`
+- SVG generation now uses the correct SVG image factory path instead of Pillow `format='SVG'`
+- QR generator now delegates output writing to format-specific adapters
+
+### Changed
+
+- **Package Rename**: `generate_qr_code_images.py` → `qr_code_generator` package
+- **Entry Point**: `python -m qr_code_generator` (previously `python generate_qr_code_images.py`)
+- **CLI Script**: `qrgen` now points to `qr_code_generator.cli:main`
+
+### Removed
+
+- Single-script `generate_qr_code_images.py` (replaced by package)
+- Dependencies on global state
+
+### Technical Details
+
+- **New Dependencies**: None (same as v2.0.0)
+- **Python Versions**: 3.8+
+- **Test Framework**: pytest with pytest-cov
+
+---
+
 ## [2.0.0] - 2025-12-17
 
 ### Added

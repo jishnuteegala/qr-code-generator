@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "qr-code-generator"
-version = "2.0.0"
+version = "3.0.0"
 description = "Generate QR Code images from Excel contact data with flexible formats and CLI"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -26,10 +26,17 @@ classifiers = [
     "Topic :: Utilities",
 ]
 dependencies = [
-    "pandas>=2.0.0",
-    "qrcode>=7.0",
-    "pillow>=10.0.0",
-    "openpyxl>=3.0.0",
+    "pandas==2.3.3",
+    "qrcode==8.2",
+    "pillow==12.0.0",
+    "openpyxl==3.1.5",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest==9.0.2",
+    "pytest-cov==7.0.0",
+    "pytest-mock==3.15.1",
 ]
 
 [project.urls]
@@ -38,4 +45,8 @@ Repository = "https://github.com/jishnuteegala/qr-code-generator"
 Issues = "https://github.com/jishnuteegala/qr-code-generator/issues"
 
 [project.scripts]
-qrgen = "generate_qr_code_images:main"
+qrgen = "qr_code_generator.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["qr_code_generator*"]
