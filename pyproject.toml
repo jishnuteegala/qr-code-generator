@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "qr-code-generator"
-version = "3.0.0"
+version = "3.0.1"
 description = "Generate QR Code images from Excel contact data with flexible formats and CLI"
 readme = "README.md"
 requires-python = ">=3.8"

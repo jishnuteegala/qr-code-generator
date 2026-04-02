@@ -1,4 +1,4 @@
-__version__ = "3.0.0"
+__version__ = "3.0.1"
 
 from qr_code_generator.core.generator import QRCodeGenerator
 from qr_code_generator.core.formatter import PhoneFormatter

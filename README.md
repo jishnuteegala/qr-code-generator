@@ -1,6 +1,6 @@
 # Excel to QR Code Generator
 
-> **v3.0.0** - Generate QR Code images from contact details stored in an Excel file with flexible output formats, customization options, and an intuitive CLI.
+> **v3.0.1** - Generate QR Code images from contact details stored in an Excel file with flexible output formats, customization options, and an intuitive CLI.
 
 For version history, see [CHANGELOG.md](CHANGELOG.md).
 
@@ -364,6 +364,61 @@ Notes:
 - Return value is an exit-style status code (`0` success, `1` failure).
 - `allowed_output_path` enables output sandboxing when needed.
 - This is the same workflow the CLI uses internally, so behavior stays consistent.
+
+## Dependency Sync Workflow
+
+This project uses `pyproject.toml` as the source of truth for direct dependencies and uses `requirements.txt` as a lock file for `pip install -r requirements.txt` workflows.
+
+Install pip-tools once in your active virtual environment:
+
+```cmd
+pip install pip-tools
+```
+
+Sync `requirements.txt` from `pyproject.toml`:
+
+```powershell
+# Windows
+powershell -ExecutionPolicy Bypass -File scripts\sync-deps.ps1
+
+# Windows dry-run (validate without writing)
+powershell -ExecutionPolicy Bypass -File scripts\sync-deps.ps1 -DryRun
+
+# Windows (also generate requirements-dev.txt from [project.optional-dependencies].test)
+powershell -ExecutionPolicy Bypass -File scripts\sync-deps.ps1 -IncludeTest
+```
+
+```bash
+# Linux/Mac
+bash scripts/sync-deps.sh
+
+# Linux/Mac dry-run (validate without writing)
+bash scripts/sync-deps.sh --dry-run
+
+# Linux/Mac (also generate requirements-dev.txt from [project.optional-dependencies].test)
+bash scripts/sync-deps.sh --with-test
+```
+
+`requirements-dev.txt` is generated with `requirements.txt` as a constraint, so runtime dependency versions stay aligned between both lock files.
+
+Install from lock files:
+
+```cmd
+# Runtime only
+pip install -r requirements.txt
+
+# Runtime + test/dev tooling
+pip install -r requirements-dev.txt
+```
+
+Why this approach:
+- Keep packaging metadata clean for PyPI (`pyproject.toml` contains direct dependencies)
+- Keep reproducible installs for local/CI (`requirements.txt` is generated/locked)
+- Avoid copying full `pip freeze` output into package metadata
+
+Dependabot setup:
+- Dependabot is configured in `.github/dependabot.yml` to use the `pip` ecosystem and ignore generated lock files (`requirements.txt`, `requirements-*.txt`).
+- This keeps automated dependency PRs focused on `pyproject.toml` rather than compiled requirements output.
 
 ## Testing
 

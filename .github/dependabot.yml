@@ -1,0 +1,10 @@
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+    # Keep pyproject.toml as source of truth; requirements*.txt is generated via pip-tools.
+    exclude-paths:
+      - "requirements.txt"
+      - "requirements-*.txt"

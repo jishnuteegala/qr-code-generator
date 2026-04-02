@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.1] - 2026-04-02
+
+### Added
+
+- Cross-platform dependency sync scripts:
+  - `scripts/sync-deps.sh` (Bash)
+  - `scripts/sync-deps.ps1` (PowerShell)
+- Optional test/dev lock file generation via `requirements-dev.txt` from `pyproject.toml` test extras
+- Dependabot configuration at `.github/dependabot.yml` to focus pip updates on metadata and ignore generated lock files
+
+### Documentation
+
+- Added dependency management workflow in `README.md`, including sync commands and install guidance for runtime vs dev/test lock files
+
+### Changed
+
+- Updated runtime image dependency: `pillow` from 12.0.0 to 12.1.1
+- Updated supporting dependency in requirements: `pygments` from 2.19.2 to 2.20.0
+- Standardized lock file generation via `pip-compile` from `pyproject.toml`
+
 ## [3.0.0] - 2026-02-14
 
 ### Added
